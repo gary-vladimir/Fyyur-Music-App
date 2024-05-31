@@ -29,3 +29,5 @@ coverage/
 
 # Ignore documentation build artifacts
 docs/_build/
+
+node_modules
