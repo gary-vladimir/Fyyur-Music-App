@@ -1,0 +1,31 @@
+# Ignore virtual environment directory
+env/
+
+# Ignore pycache directory
+__pycache__/
+
+# Ignore temporary IDE or editor files
+*.py[co]
+
+# Ignore compiled files
+*.so
+*.dll
+
+# Ignore build products
+*.egg-info/
+dist/
+build/
+
+# Ignore logs
+*.log
+
+# Ignore test database files
+# Adjust the pattern based on your database system
+test.db
+test_database.sqlite
+
+# Ignore coverage reports
+coverage/
+
+# Ignore documentation build artifacts
+docs/_build/
