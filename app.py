@@ -142,11 +142,13 @@ def venues():
 @app.route("/venues/search", methods=["POST"])
 def search_venues():
     search_term = request.form.get("search_term", "")
-    search = f"%{search_term}%"
-    venues = Venue.query.filter(Venue.name.ilike(search)).all()
+    search = f"%{search_term}%"  # formatting
+    venues = Venue.query.filter(
+        Venue.name.ilike(search)
+    ).all()  # getting venues that match
 
     response = {"count": len(venues), "data": []}
-
+    # formatting response to include the number of upcoming shows.
     for venue in venues:
         num_upcoming_shows = len(
             Show.query.filter(
