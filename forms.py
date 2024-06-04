@@ -6,8 +6,39 @@ from wtforms import (
     SelectMultipleField,
     DateTimeField,
     BooleanField,
+    ValidationError,
 )
-from wtforms.validators import DataRequired, AnyOf, URL
+from wtforms.validators import DataRequired, URL, Regexp
+import enum
+
+
+class GenreEnum(enum.Enum):
+    Alternative = "Alternative"
+    Blues = "Blues"
+    Classical = "Classical"
+    Country = "Country"
+    Electronic = "Electronic"
+    Folk = "Folk"
+    Funk = "Funk"
+    HipHop = "Hip-Hop"
+    HeavyMetal = "Heavy Metal"
+    Instrumental = "Instrumental"
+    Jazz = "Jazz"
+    MusicalTheatre = "Musical Theatre"
+    Pop = "Pop"
+    Punk = "Punk"
+    RnB = "R&B"
+    Reggae = "Reggae"
+    RocknRoll = "Rock n Roll"
+    Soul = "Soul"
+    Other = "Other"
+
+
+def validate_genres(form, field):
+    valid_genres = [genre.value for genre in GenreEnum]
+    for genre in field.data:
+        if genre not in valid_genres:
+            raise ValidationError(f"Invalid genre: {genre}")
 
 
 class SearchForm(FlaskForm):
@@ -83,39 +114,24 @@ class VenueForm(FlaskForm):
         ],
     )
     address = StringField("address", validators=[DataRequired()])
-    phone = StringField("phone")
-    image_link = StringField("image_link")
-    genres = SelectMultipleField(
-        # TODO implement enum restriction
-        "genres",
-        validators=[DataRequired()],
-        choices=[
-            ("Alternative", "Alternative"),
-            ("Blues", "Blues"),
-            ("Classical", "Classical"),
-            ("Country", "Country"),
-            ("Electronic", "Electronic"),
-            ("Folk", "Folk"),
-            ("Funk", "Funk"),
-            ("Hip-Hop", "Hip-Hop"),
-            ("Heavy Metal", "Heavy Metal"),
-            ("Instrumental", "Instrumental"),
-            ("Jazz", "Jazz"),
-            ("Musical Theatre", "Musical Theatre"),
-            ("Pop", "Pop"),
-            ("Punk", "Punk"),
-            ("R&B", "R&B"),
-            ("Reggae", "Reggae"),
-            ("Rock n Roll", "Rock n Roll"),
-            ("Soul", "Soul"),
-            ("Other", "Other"),
+    phone = StringField(
+        "phone",
+        validators=[
+            Regexp(
+                r"^\d{3}-\d{3}-\d{4}$",
+                message="Phone number must be in the format xxx-xxx-xxxx",
+            )
         ],
     )
-    facebook_link = StringField("facebook_link")
-    website_link = StringField("website_link")
-
+    image_link = StringField("image_link")
+    genres = SelectMultipleField(
+        "genres",
+        validators=[DataRequired(), validate_genres],
+        choices=[(genre.value, genre.value) for genre in GenreEnum],
+    )
+    facebook_link = StringField("facebook_link", validators=[URL()])
+    website_link = StringField("website_link", validators=[URL()])
     seeking_talent = BooleanField("seeking_talent")
-
     seeking_description = StringField("seeking_description")
 
 
@@ -180,43 +196,21 @@ class ArtistForm(FlaskForm):
         ],
     )
     phone = StringField(
-        # TODO implement validation logic for state
-        "phone"
+        "phone",
+        validators=[
+            Regexp(
+                r"^\d{3}-\d{3}-\d{4}$",
+                message="Phone number must be in the format xxx-xxx-xxxx",
+            )
+        ],
     )
     image_link = StringField("image_link")
     genres = SelectMultipleField(
         "genres",
-        validators=[DataRequired()],
-        choices=[
-            ("Alternative", "Alternative"),
-            ("Blues", "Blues"),
-            ("Classical", "Classical"),
-            ("Country", "Country"),
-            ("Electronic", "Electronic"),
-            ("Folk", "Folk"),
-            ("Funk", "Funk"),
-            ("Hip-Hop", "Hip-Hop"),
-            ("Heavy Metal", "Heavy Metal"),
-            ("Instrumental", "Instrumental"),
-            ("Jazz", "Jazz"),
-            ("Musical Theatre", "Musical Theatre"),
-            ("Pop", "Pop"),
-            ("Punk", "Punk"),
-            ("R&B", "R&B"),
-            ("Reggae", "Reggae"),
-            ("Rock n Roll", "Rock n Roll"),
-            ("Soul", "Soul"),
-            ("Other", "Other"),
-        ],
+        validators=[DataRequired(), validate_genres],
+        choices=[(genre.value, genre.value) for genre in GenreEnum],
     )
-    facebook_link = StringField(
-        # TODO implement enum restriction
-        "facebook_link",
-        validators=[URL()],
-    )
-
-    website_link = StringField("website_link")
-
+    facebook_link = StringField("facebook_link", validators=[URL()])
+    website_link = StringField("website_link", validators=[URL()])
     seeking_venue = BooleanField("seeking_venue")
-
     seeking_description = StringField("seeking_description")
