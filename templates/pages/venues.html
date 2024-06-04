@@ -3,17 +3,41 @@
 {% block content %}
 {% for area in areas %}
 <h3>{{ area.city }}, {{ area.state }}</h3>
-	<ul class="items">
-		{% for venue in area.venues %}
-		<li>
-			<a href="/venues/{{ venue.id }}">
-				<i class="fas fa-music"></i>
-				<div class="item">
-					<h5>{{ venue.name }}</h5>
-				</div>
-			</a>
-		</li>
-		{% endfor %}
-	</ul>
+<ul class="items">
+	{% for venue in area.venues %}
+	<li class="itemVenue">
+		<a href="/venues/{{ venue.id }}">
+			<i class="fas fa-music"></i>
+			<div class="item">
+				<h5>{{ venue.name }}</h5>
+			</div>
+		</a>
+		<button onclick="deleteVenue({{venue.id}})" class="deleteCross">&cross;</button>
+	</li>
+	{% endfor %}
+</ul>
 {% endfor %}
+{% endblock %}
+{% block scripts %}
+<script>
+	function deleteVenue(venueId) {
+		fetch(`/venues/${venueId}`, {
+			method: "DELETE",
+			headers: {
+				'Content-Type': "application/json",
+				"X-CSRFToken": '{{csrf_token()}}'
+			}
+		}).then(response => response.json())
+			.then(data => {
+				if (data.success) {
+					window.location.href = '/venues';
+				} else {
+					alert('An error occurred while trying to delete the venue.');
+				}
+			}).catch(error => {
+				console.error('Error:', error);
+				alert('An error occurred while trying to delete the venue.');
+			});
+	}
+</script>
 {% endblock %}
