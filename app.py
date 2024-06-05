@@ -139,19 +139,42 @@ def show_venue(venue_id):
     if not venue:
         return render_template("errors/404.html"), 404
     now = datetime.now()
+    # Join Show and Artist tables to get past and upcoming shows
+    past_shows_query = (
+        db.session.query(Show)
+        .join(Artist)
+        .filter(Show.venue_id == venue_id, Show.start_time < now)
+        .all()
+    )
+    upcoming_shows_query = (
+        db.session.query(Show)
+        .join(Artist)
+        .filter(Show.venue_id == venue_id, Show.start_time >= now)
+        .all()
+    )
+
     past_shows = []
     upcoming_shows = []
-    for show in venue.shows:
-        helper = {
-            "artist_id": show.artist.id,
-            "artist_name": show.artist.name,
-            "artist_image_link": show.artist.image_link,
-            "start_time": show.start_time.strftime("%Y-%m-%d %H:%M:%S"),
-        }
-        if show.start_time < now:
-            past_shows.append(helper)
-        else:
-            upcoming_shows.append(helper)
+
+    for show in past_shows_query:
+        past_shows.append(
+            {
+                "artist_id": show.artist.id,
+                "artist_name": show.artist.name,
+                "artist_image_link": show.artist.image_link,
+                "start_time": show.start_time.strftime("%Y-%m-%d %H:%M:%S"),
+            }
+        )
+
+    for show in upcoming_shows_query:
+        upcoming_shows.append(
+            {
+                "artist_id": show.artist.id,
+                "artist_name": show.artist.name,
+                "artist_image_link": show.artist.image_link,
+                "start_time": show.start_time.strftime("%Y-%m-%d %H:%M:%S"),
+            }
+        )
 
     data = {
         "id": venue.id,
@@ -291,20 +314,41 @@ def show_artist(artist_id):
     if not artist:
         return render_template("errors/404.html"), 404
     now = datetime.now()
-    upcoming_shows = []
-    past_shows = []
-    for show in artist.shows:
-        helper = {
-            "venue_id": show.venue.id,
-            "venue_name": show.venue.name,
-            "venue_image_link": show.venue.image_link,
-            "start_time": show.start_time.strftime("%Y-%m-%d %H:%M:%S"),
-        }
-        if show.start_time < now:
-            past_shows.append(helper)
-        else:
-            upcoming_shows.append(helper)
+    past_shows_query = (
+        db.session.query(Show)
+        .join(Venue)
+        .filter(Show.artist_id == artist_id, Show.start_time < now)
+        .all()
+    )
+    upcoming_shows_query = (
+        db.session.query(Show)
+        .join(Venue)
+        .filter(Show.artist_id == artist_id, Show.start_time >= now)
+        .all()
+    )
 
+    past_shows = []
+    upcoming_shows = []
+
+    for show in past_shows_query:
+        past_shows.append(
+            {
+                "venue_id": show.venue.id,
+                "venue_name": show.venue.name,
+                "venue_image_link": show.venue.image_link,
+                "start_time": show.start_time.strftime("%Y-%m-%d %H:%M:%S"),
+            }
+        )
+
+    for show in upcoming_shows_query:
+        upcoming_shows.append(
+            {
+                "venue_id": show.venue.id,
+                "venue_name": show.venue.name,
+                "venue_image_link": show.venue.image_link,
+                "start_time": show.start_time.strftime("%Y-%m-%d %H:%M:%S"),
+            }
+        )
     data = {
         "id": artist.id,
         "name": artist.name,
